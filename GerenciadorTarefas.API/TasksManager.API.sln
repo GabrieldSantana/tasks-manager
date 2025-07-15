@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerenciadorTarefas.API", "GerenciadorTarefas.API.csproj", "{84EC3E5B-E7E4-4C10-BB75-25CCB8B28DDC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TasksManager.API", "TasksManager.API.csproj", "{84EC3E5B-E7E4-4C10-BB75-25CCB8B28DDC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "..\Application\Application.csproj", "{1BF1F433-26B0-4313-A434-F26B6658606F}"
 EndProject

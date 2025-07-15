@@ -1,27 +1,27 @@
 ﻿using Application.Interfaces.IMainService;
-using Domain.Notificacao;
+using Domain.Notification;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 [ApiController]
 public abstract class MainController : ControllerBase
 {
-    private readonly INotificador _notificador;
+    private readonly INotifier _notifier;
 
-    public MainController(INotificador notificador)
+    public MainController(INotifier notifier)
     {
-        _notificador = notificador;
+        _notifier = notifier;
 
     }
 
-    protected bool OperacaoValida()
+    protected bool ValidOperation()
     {
-        return !_notificador.TemNotificacao();
+        return !_notifier.HaveNotification();
     }
 
-    protected ActionResult CustomResponse(object? result = null, int? codigo = null)
+    protected ActionResult CustomResponse(object? result = null, int? code = null)
     {
-        if (OperacaoValida())
+        if (ValidOperation())
         {
             return Ok(new
             {
@@ -30,12 +30,12 @@ public abstract class MainController : ControllerBase
             });
         }
 
-        if (codigo == 404)
+        if (code == 404)
         {
             return NotFound(new
             {
                 success = false,
-                errors = _notificador.ObterNotificacoes().Select(n => n.Mensagem)
+                errors = _notifier.GetNotifications().Select(n => n.Message)
             });
         }
         else
@@ -43,29 +43,29 @@ public abstract class MainController : ControllerBase
             return BadRequest(new
             {
                 success = false,
-                errors = _notificador.ObterNotificacoes().Select(n => n.Mensagem)
+                errors = _notifier.GetNotifications().Select(n => n.Message)
             });
         }
     }
 
     protected ActionResult CustomResponse(ModelStateDictionary modelState)
     {
-        if (!ModelState.IsValid) NotificarErroModelInvalida(ModelState);
+        if (!ModelState.IsValid) NotifyInvalidModelError(ModelState);
         return CustomResponse();
     }
 
-    protected void NotificarErroModelInvalida(ModelStateDictionary modelState)
+    protected void NotifyInvalidModelError(ModelStateDictionary modelState)
     {
-        var erros = modelState.Values.SelectMany(e => e.Errors);
-        foreach (var erro in erros)
+        var errors = modelState.Values.SelectMany(e => e.Errors);
+        foreach (var erro in errors)
         {
             var errorMsg = erro.Exception == null ? erro.ErrorMessage : erro.Exception.Message;
-            NotificarErro(errorMsg);
+            NotifyError(errorMsg);
         }
     }
 
-    protected void NotificarErro(string mensagem)
+    protected void NotifyError(string message)
     {
-        _notificador.Handle(new Notificacao(mensagem));
+        _notifier.Handle(new Notification(message));
     }
 }
