@@ -30,7 +30,7 @@ public abstract class MainController : ControllerBase
             });
         }
 
-        if (code == 404)
+        else if (code == 404)
         {
             return NotFound(new
             {
