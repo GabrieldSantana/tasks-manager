@@ -17,10 +17,11 @@ public class TaskRepository : ITaskRepository
     {
         try
         {
-            string sql = @"INSERT INTO TASK VALUES (@NAME, @DESCRIPTION, @PRIORITY, @LIMITDATE, @STATUS)";
+            string sql = @"INSERT INTO TASK VALUES (@ID, @NAME, @DESCRIPTION, @PRIORITY, @LIMITDATE, @STATUS)";
 
             var sqlParams = new
             {
+                ID = Guid.CreateVersion7(),
                 NAME = task.Name,
                 DESCRIPTION = task.Description,
                 PRIORITY = task.Priority,
@@ -38,13 +39,13 @@ public class TaskRepository : ITaskRepository
         }
     }
 
-    public async Task<bool> DeleteTaskAsync(int id)
+    public async Task<bool> DeleteTaskAsync(Guid id)
     {
         try
         {
-            string sql = $"DELETE TASK WHERE ID = {id}";
+            string sql = $"DELETE FROM TASK WHERE ID = @ID";
 
-            var result = await _connection.ExecuteAsync(sql);
+            var result = await _connection.ExecuteAsync(sql, new { ID = id });
 
             return result > 0 ? true : false;
         }
@@ -54,13 +55,13 @@ public class TaskRepository : ITaskRepository
         }
     }
 
-    public async Task<TaskModel> GetTaskByIdAsync(int id)
+    public async Task<TaskModel?> GetTaskByIdAsync(Guid id)
     {
         try
         {
-            string sql = $"SELECT * FROM TASK WHERE ID = {id}";
+            string sql = $"SELECT * FROM TASK WHERE ID = @ID";
 
-            var task = await _connection.QueryFirstOrDefaultAsync<TaskModel>(sql);
+            var task = await _connection.QueryFirstOrDefaultAsync<TaskModel>(sql, new { ID = id });
 
             return task;
         }
