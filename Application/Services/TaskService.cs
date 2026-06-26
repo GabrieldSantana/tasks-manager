@@ -1,7 +1,5 @@
-﻿using System.Threading.Tasks;
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using Application.Services.Exceptions;
-using Application.Services.Global;
 using Domain.Dtos;
 using Domain.Models;
 using Infrastructure.Interfaces;
@@ -12,8 +10,7 @@ namespace Application.Services;
 public class TaskService : ITaskService
 {
     private readonly ITaskRepository _repository;
-    public TaskService(ITaskRepository repository)
-    {
+    public TaskService(ITaskRepository repository)    {
         _repository = repository;
     }
 
@@ -28,13 +25,13 @@ public class TaskService : ITaskService
         catch (Exception) { throw; }
     }
 
-    public async Task<bool> DeleteTaskAsync(int id)
+    public async Task<bool> DeleteTaskAsync(Guid id)
     {
         try
         {
-            if (!UtilityService.GreaterThanZero(id)) throw new Exception("The id number cannot be less than zero.");
+            if (id == Guid.Empty) throw new ArgumentException("Invalid id.");
 
-            TaskModel existingTask = await _repository.GetTaskByIdAsync(id);
+            TaskModel? existingTask = await _repository.GetTaskByIdAsync(id);
 
             if (existingTask == null) throw new NotFoundException("Task not found.");
 
@@ -43,17 +40,17 @@ public class TaskService : ITaskService
         catch (Exception) { throw; }
     }
 
-    public async Task<TaskModel> GetTaskByIdAsync(int id)
+    public async Task<TaskModel> GetTaskByIdAsync(Guid id)
     {
         try
         {
-            if (!UtilityService.GreaterThanZero(id)) throw new Exception("The id number cannot be less than zero.");
+            if (id == Guid.Empty) throw new ArgumentException("Invalid id.");
 
-            TaskModel existingTask = await _repository.GetTaskByIdAsync(id);
+            TaskModel? existingTask = await _repository.GetTaskByIdAsync(id);
 
-            if (existingTask == null) throw new NotFoundException("Task not found.");
+            if (existingTask == null) throw new KeyNotFoundException($"Task {id} not found.");
 
-            return await _repository.GetTaskByIdAsync(id);
+            return existingTask;
         }
         catch (Exception) { throw; }
     }
@@ -75,13 +72,13 @@ public class TaskService : ITaskService
     {
         try
         {
+            if (taskDTO.Id == Guid.Empty) throw new ArgumentException("Invalid id.");
+            
             TaskModel task = taskDTO.Adapt<TaskModel>();
 
-            if (!UtilityService.GreaterThanZero(task.Id)) throw new Exception("The id number cannot be less than zero.");
+            TaskModel? existingTask = await _repository.GetTaskByIdAsync(task.Id);
 
-            TaskModel existingTask = await _repository.GetTaskByIdAsync(task.Id);
-
-            if (existingTask == null) throw new Exception("Task not found.");
+            if (existingTask == null) throw new NotFoundException("Task not found.");
 
             return await _repository.UpdateTaskAsync(task);
         }

@@ -5,8 +5,8 @@ namespace Application.Interfaces;
 public interface ITaskService
 {
     Task<List<TaskModel>> GetTasksAsync();
-    Task<TaskModel> GetTaskByIdAsync(int id);
+    Task<TaskModel> GetTaskByIdAsync(Guid id);
     Task<bool> CreateTaskAsync(TaskDTO taskDTO);
     Task<bool> UpdateTaskAsync(UpdateTaskDTO taskDTO);
-    Task<bool> DeleteTaskAsync(int id);
+    Task<bool> DeleteTaskAsync(Guid id);
 }

@@ -49,11 +49,11 @@ public class TaskController : MainController
     /// </summary>
     /// <param name="id"></param>
     /// <returns>Returns a task object</returns>
-    [HttpGet("{id}")]
+    [HttpGet("{id:Guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetTaskByIdAsync(int id)
+    public async Task<IActionResult> GetTaskByIdAsync(Guid id)
     {
         try
         {
@@ -136,7 +136,7 @@ public class TaskController : MainController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> DeleteTaskAsync(int id)
+    public async Task<IActionResult> DeleteTaskAsync(Guid id)
     {
         try
         {

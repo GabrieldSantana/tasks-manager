@@ -24,7 +24,7 @@ public class TaskDTO
 public class UpdateTaskDTO
 {
     [Required(ErrorMessage = "Task ID is required.")]
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     [Required(ErrorMessage = "The task name is required.")]
     [StringLength(150, ErrorMessage = "The task name must be at most 150 characters long.")]
