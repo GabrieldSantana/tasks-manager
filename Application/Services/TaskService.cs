@@ -10,11 +10,12 @@ namespace Application.Services;
 public class TaskService : ITaskService
 {
     private readonly ITaskRepository _repository;
-    public TaskService(ITaskRepository repository)    {
+    public TaskService(ITaskRepository repository)
+    {
         _repository = repository;
     }
 
-    public async Task<bool> CreateTaskAsync(TaskDTO taskDTO)
+    public async Task<bool> CreateTaskAsync(CreateTaskRequest taskDTO)
     {
         try
         {
@@ -40,7 +41,7 @@ public class TaskService : ITaskService
         catch (Exception) { throw; }
     }
 
-    public async Task<TaskModel> GetTaskByIdAsync(Guid id)
+    public async Task<TaskResponse> GetTaskByIdAsync(Guid id)
     {
         try
         {
@@ -50,12 +51,22 @@ public class TaskService : ITaskService
 
             if (existingTask == null) throw new KeyNotFoundException($"Task {id} not found.");
 
-            return existingTask;
+            var response = new TaskResponse
+            {
+                Id = existingTask.Id,
+                Name = existingTask.Name,
+                Description = existingTask.Description,
+                Priority = existingTask.Priority.ToString(),
+                LimitDate = existingTask.LimitDate,
+                Status = existingTask.Status.ToString()
+            };
+
+            return response;
         }
         catch (Exception) { throw; }
     }
 
-    public async Task<List<TaskModel>> GetTasksAsync()
+    public async Task<List<TaskResponse>> GetTasksAsync()
     {
         try
         {
@@ -63,17 +74,27 @@ public class TaskService : ITaskService
 
             if (tasks.IsNullOrEmpty()) throw new NotFoundException("No tasks were found.");
 
-            return tasks;
+            var response = tasks.Select(task => new TaskResponse
+            {
+                Id = task.Id,
+                Name = task.Name,
+                Description = task.Description,
+                Priority = task.Priority.ToString(),
+                LimitDate = task.LimitDate,
+                Status = task.Status.ToString()
+            });
+
+            return response.ToList();
         }
         catch (Exception) { throw; }
     }
 
-    public async Task<bool> UpdateTaskAsync(UpdateTaskDTO taskDTO)
+    public async Task<bool> UpdateTaskAsync(UpdateTaskRequest taskDTO)
     {
         try
         {
             if (taskDTO.Id == Guid.Empty) throw new ArgumentException("Invalid id.");
-            
+
             TaskModel task = taskDTO.Adapt<TaskModel>();
 
             TaskModel? existingTask = await _repository.GetTaskByIdAsync(task.Id);

@@ -9,7 +9,9 @@ public static class MappingConfigurations
 {
     public static void RegisterMaps(this IServiceCollection services)
     {
-        TypeAdapterConfig<TaskDTO, TaskModel>.NewConfig();
+        TypeAdapterConfig<CreateTaskRequest, TaskModel>.NewConfig();
+        TypeAdapterConfig<UpdateTaskRequest, TaskModel>.NewConfig();
+        TypeAdapterConfig<TaskModel, TaskResponse>.NewConfig();
 
         TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
     }

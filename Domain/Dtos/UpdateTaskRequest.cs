@@ -2,9 +2,11 @@
 using Domain.Enums;
 
 namespace Domain.Dtos;
-
-public class TaskDTO
+public class UpdateTaskRequest
 {
+    [Required(ErrorMessage = "Task ID is required.")]
+    public Guid Id { get; set; }
+
     [Required(ErrorMessage = "The task name is required.")]
     [StringLength(150, ErrorMessage = "The task name must be at most 150 characters long.")]
     public string Name { get; set; }
@@ -15,10 +17,9 @@ public class TaskDTO
     [Required(ErrorMessage = "Priority is required.")]
     public PriorityEnum Priority { get; set; }
 
+    [Required(ErrorMessage = "Limit date is required.")]
     public DateTime LimitDate { get; set; }
 
     [Required(ErrorMessage = "Status is required.")]
     public StatusEnum Status { get; set; }
 }
-
-

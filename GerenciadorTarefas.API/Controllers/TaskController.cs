@@ -2,7 +2,6 @@
 using Application.Interfaces.IMainService;
 using Application.Services.Exceptions;
 using Domain.Dtos;
-using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TasksManager.API.Controllers;
@@ -29,7 +28,7 @@ public class TaskController : MainController
     {
         try
         {
-            List<TaskModel> tasks = await _service.GetTasksAsync();
+            List<TaskResponse> tasks = await _service.GetTasksAsync();
             return CustomResponse(tasks);
         }
         catch (NotFoundException ex)
@@ -57,7 +56,7 @@ public class TaskController : MainController
     {
         try
         {
-            TaskModel task = await _service.GetTaskByIdAsync(id);
+            TaskResponse task = await _service.GetTaskByIdAsync(id);
             return CustomResponse(task);
         }
         catch (NotFoundException ex)
@@ -80,7 +79,7 @@ public class TaskController : MainController
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> CreateTaskAsync([FromBody] TaskDTO task)
+    public async Task<IActionResult> CreateTaskAsync([FromBody] CreateTaskRequest task)
     {
         try
         {
@@ -108,7 +107,7 @@ public class TaskController : MainController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateTaskAsync([FromBody] UpdateTaskDTO task)
+    public async Task<IActionResult> UpdateTaskAsync([FromBody] UpdateTaskRequest task)
     {
         try
         {

@@ -4,9 +4,9 @@ using Domain.Models;
 namespace Application.Interfaces;
 public interface ITaskService
 {
-    Task<List<TaskModel>> GetTasksAsync();
-    Task<TaskModel> GetTaskByIdAsync(Guid id);
-    Task<bool> CreateTaskAsync(TaskDTO taskDTO);
-    Task<bool> UpdateTaskAsync(UpdateTaskDTO taskDTO);
+    Task<List<TaskResponse>> GetTasksAsync();
+    Task<TaskResponse> GetTaskByIdAsync(Guid id);
+    Task<bool> CreateTaskAsync(CreateTaskRequest taskDTO);
+    Task<bool> UpdateTaskAsync(UpdateTaskRequest taskDTO);
     Task<bool> DeleteTaskAsync(Guid id);
 }
