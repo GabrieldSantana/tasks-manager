@@ -15,83 +15,60 @@ public class TaskRepository : ITaskRepository
 
     public async Task<bool> CreateTaskAsync(TaskModel task)
     {
-        try
+        string sql = @"INSERT INTO TASK (ID, NAME, DESCRIPTION, PRIORITY, LIMITDATE, STATUS) 
+                                 VALUES (@ID, @NAME, @DESCRIPTION, @PRIORITY, @LIMITDATE, @STATUS)";
+
+        var sqlParams = new
         {
-            string sql = @"INSERT INTO TASK VALUES (@ID, @NAME, @DESCRIPTION, @PRIORITY, @LIMITDATE, @STATUS)";
+            ID = task.Id,
+            NAME = task.Name,
+            DESCRIPTION = task.Description,
+            PRIORITY = task.Priority,
+            LIMITDATE = task.LimitDate,
+            STATUS = task.Status
+        };
 
-            var sqlParams = new
-            {
-                ID = Guid.CreateVersion7(),
-                NAME = task.Name,
-                DESCRIPTION = task.Description,
-                PRIORITY = task.Priority,
-                LIMITDATE = task.LimitDate,
-                STATUS = task.Status
-            };
+        int result = await _connection.ExecuteAsync(sql, sqlParams);
 
-            int result = await _connection.ExecuteAsync(sql, sqlParams);
+        return result > 0 ? true : false;
 
-            return result > 0 ? true : false; 
-        }
-        catch (Exception)
-        {
-            throw new Exception("Could not create task.");
-        }
     }
 
     public async Task<bool> DeleteTaskAsync(Guid id)
     {
-        try
-        {
-            string sql = $"DELETE FROM TASK WHERE ID = @ID";
+        string sql = $"DELETE FROM TASK WHERE ID = @ID";
 
-            var result = await _connection.ExecuteAsync(sql, new { ID = id });
+        var result = await _connection.ExecuteAsync(sql, new { ID = id });
 
-            return result > 0 ? true : false;
-        }
-        catch (Exception)
-        {
-            throw new Exception("Could not delete task.");
-        }
+        return result > 0 ? true : false;
+
     }
 
     public async Task<TaskModel?> GetTaskByIdAsync(Guid id)
     {
-        try
-        {
-            string sql = $"SELECT * FROM TASK WHERE ID = @ID";
+        string sql = @"SELECT ID, NAME, DESCRIPTION, PRIORITY, LIMITDATE, STATUS 
+                        FROM TASK WHERE ID = @ID";
 
-            var task = await _connection.QueryFirstOrDefaultAsync<TaskModel>(sql, new { ID = id });
+        var task = await _connection.QueryFirstOrDefaultAsync<TaskModel>(sql, new { ID = id });
 
-            return task;
-        }
-        catch (Exception)
-        {
-            throw new Exception("Could not get task by id.");
-        }
+        return task;
+
     }
 
     public async Task<List<TaskModel>> GetTasksAsync()
     {
-        try
-        {
-            string sql = "SELECT * FROM TASK";
+        string sql = @"SELECT ID, NAME, DESCRIPTION, PRIORITY, LIMITDATE, STATUS 
+                        FROM TASK";
 
-            var tasks = await _connection.QueryAsync<TaskModel>(sql);
+        var tasks = await _connection.QueryAsync<TaskModel>(sql);
 
-            return tasks.ToList();
-        }
-        catch (Exception)
-        {
-            throw new Exception("Could not get list of tasks.");
-        }
+        return tasks.ToList();
+
     }
 
     public async Task<bool> UpdateTaskAsync(TaskModel task)
     {
-        try
-        {
-            string sql = @"UPDATE TASK SET 
+        string sql = @"UPDATE TASK SET 
                             NAME = @NAME,
                             DESCRIPTION = @DESCRIPTION,
                             PRIORITY = @PRIORITY,
@@ -99,23 +76,19 @@ public class TaskRepository : ITaskRepository
                             STATUS = @STATUS
                             WHERE ID = @ID";
 
-            var sqlParams = new
-            {
-                NAME = task.Name,
-                DESCRIPTION = task.Description,
-                PRIORITY = task.Priority,
-                LIMITDATE = task.LimitDate,
-                STATUS = task.Status,
-                ID = task.Id
-            };
-
-            var result = await _connection.ExecuteAsync(sql, sqlParams);
-
-            return result > 0 ? true : false;
-        }
-        catch (Exception)
+        var sqlParams = new
         {
-            throw new Exception("Could not update task.");
-        }
+            NAME = task.Name,
+            DESCRIPTION = task.Description,
+            PRIORITY = task.Priority,
+            LIMITDATE = task.LimitDate,
+            STATUS = task.Status,
+            ID = task.Id
+        };
+
+        var result = await _connection.ExecuteAsync(sql, sqlParams);
+
+        return result > 0 ? true : false;
+
     }
 }

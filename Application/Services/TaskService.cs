@@ -20,6 +20,7 @@ public class TaskService : ITaskService
         try
         {
             TaskModel task = taskDTO.Adapt<TaskModel>();
+            task.Id = Guid.CreateVersion7();
 
             return await _repository.CreateTaskAsync(task);
         }
