@@ -13,7 +13,7 @@ public class TaskRepository : ITaskRepository
         _connection = connection;
     }
 
-    public async Task<bool> CreateTaskAsync(TaskModel task)
+    public async Task CreateTaskAsync(TaskModel task)
     {
         string sql = @"INSERT INTO TASK (ID, NAME, DESCRIPTION, PRIORITY, LIMITDATE, STATUS) 
                                  VALUES (@ID, @NAME, @DESCRIPTION, @PRIORITY, @LIMITDATE, @STATUS)";
@@ -29,19 +29,13 @@ public class TaskRepository : ITaskRepository
         };
 
         int result = await _connection.ExecuteAsync(sql, sqlParams);
-
-        return result > 0 ? true : false;
-
     }
 
-    public async Task<bool> DeleteTaskAsync(Guid id)
+    public async Task DeleteTaskAsync(Guid id)
     {
         string sql = $"DELETE FROM TASK WHERE ID = @ID";
 
         var result = await _connection.ExecuteAsync(sql, new { ID = id });
-
-        return result > 0 ? true : false;
-
     }
 
     public async Task<TaskModel?> GetTaskByIdAsync(Guid id)
@@ -66,7 +60,7 @@ public class TaskRepository : ITaskRepository
 
     }
 
-    public async Task<bool> UpdateTaskAsync(TaskModel task)
+    public async Task UpdateTaskAsync(TaskModel task)
     {
         string sql = @"UPDATE TASK SET 
                             NAME = @NAME,
@@ -87,8 +81,6 @@ public class TaskRepository : ITaskRepository
         };
 
         var result = await _connection.ExecuteAsync(sql, sqlParams);
-
-        return result > 0 ? true : false;
 
     }
 }

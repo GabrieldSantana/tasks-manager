@@ -1,5 +1,4 @@
 ﻿using Application.Interfaces;
-using Application.Interfaces.IMainService;
 using Application.Services;
 using Infrastructure.Interfaces;
 using Infrastructure.Repositories;
@@ -12,8 +11,6 @@ public static class DependencyInjection
     {
         services.AddScoped<ITaskRepository, TaskRepository>();
         services.AddScoped<ITaskService, TaskService>();
-
-        services.AddScoped<INotifier, Notifier>();
 
         return services;
     }

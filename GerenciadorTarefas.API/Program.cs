@@ -4,6 +4,7 @@ using FluentValidation;
 using GerenciadorTarefas.API.Config;
 using Microsoft.Data.SqlClient;
 using TasksManager.API.Config;
+using TasksManager.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,6 +57,8 @@ app.UseRouting();
 
 app.UseCors("AllowAngularApp");
 
+app.UseMiddleware<ExceptionMiddleware>();
+ 
 app.UseAuthorization();
 
 app.MapControllers();

@@ -1,18 +1,17 @@
-﻿using Application.Interfaces;
-using Application.Interfaces.IMainService;
-using Application.Services.Exceptions;
-using Domain.Dtos;
+﻿using Application.Dtos.Requests;
+using Application.Dtos.Responses;
+using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TasksManager.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class TaskController : MainController
+public class TaskController : ControllerBase
 {
     private readonly ITaskService _service;
 
-    public TaskController(INotifier notifier, ITaskService service) : base(notifier)
+    public TaskController(ITaskService service)
     {
         _service = service;
     }
@@ -26,21 +25,8 @@ public class TaskController : MainController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetTasksAsync()
     {
-        try
-        {
-            List<TaskResponse> tasks = await _service.GetTasksAsync();
-            return CustomResponse(tasks);
-        }
-        catch (NotFoundException ex)
-        {
-            NotifyError(ex.Message);
-            return CustomResponse(null, 404);
-        }
-        catch (Exception ex)
-        {
-            NotifyError(ex.Message);
-            return CustomResponse();
-        }
+        List<TaskResponse> tasks = await _service.GetTasksAsync();
+        return Ok(tasks);
     }
 
     /// <summary>
@@ -54,21 +40,8 @@ public class TaskController : MainController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetTaskByIdAsync(Guid id)
     {
-        try
-        {
-            TaskResponse task = await _service.GetTaskByIdAsync(id);
-            return CustomResponse(task);
-        }
-        catch (NotFoundException ex)
-        {
-            NotifyError(ex.Message);
-            return CustomResponse(null, 404);
-        }
-        catch (Exception ex)
-        {
-            NotifyError(ex.Message);
-            return CustomResponse();
-        }
+        TaskResponse task = await _service.GetTaskByIdAsync(id);
+        return Ok(task);
     }
 
     /// <summary>
@@ -79,23 +52,16 @@ public class TaskController : MainController
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> CreateTaskAsync([FromBody] CreateTaskRequest task)
+    public async Task<IActionResult> CreateTaskAsync([FromBody] CreateTaskRequest request)
     {
-        try
-        {
-            bool result = await _service.CreateTaskAsync(task);
-            return CustomResponse("Task created successfully!");
-        }
-        catch (NotFoundException ex)
-        {
-            NotifyError(ex.Message);
-            return CustomResponse(null, 404);
-        }
-        catch (Exception ex)
-        {
-            NotifyError(ex.Message);
-            return CustomResponse();
-        }
+        var task = await _service.CreateTaskAsync(request);
+
+        return CreatedAtAction(
+            nameof(GetTaskByIdAsync),
+            new { id = task.Id },
+            task
+            );
+
     }
 
     /// <summary>
@@ -109,21 +75,8 @@ public class TaskController : MainController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateTaskAsync([FromBody] UpdateTaskRequest task)
     {
-        try
-        {
-            bool result = await _service.UpdateTaskAsync(task);
-            return CustomResponse("Task updated successfully");
-        }
-        catch (NotFoundException ex)
-        {
-            NotifyError(ex.Message);
-            return CustomResponse(null, 404);
-        }
-        catch (Exception ex)
-        {
-            NotifyError(ex.Message);
-            return CustomResponse();
-        }
+        await _service.UpdateTaskAsync(task);
+        return NoContent();
     }
 
     /// <summary>
@@ -137,20 +90,7 @@ public class TaskController : MainController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteTaskAsync(Guid id)
     {
-        try
-        {
-            bool result = await _service.DeleteTaskAsync(id);
-            return CustomResponse("Task deleted successfully!");
-        }
-        catch (NotFoundException ex)
-        {
-            NotifyError(ex.Message);
-            return CustomResponse(null, 404);
-        }
-        catch (Exception ex)
-        {
-            NotifyError(ex.Message);
-            return CustomResponse();
-        }
+        await _service.DeleteTaskAsync(id);
+        return NoContent();
     }
 }
