@@ -1,4 +1,5 @@
-﻿public class TaskResponse
+﻿namespace Application.Dtos.Responses;
+public class TaskResponse
 {
     public Guid Id { get; set; }
     public string Name { get; set; }
