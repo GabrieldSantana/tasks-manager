@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
-using Domain.Dtos;
+using Application.Dtos.Requests;
+using Application.Dtos.Responses;
 using Domain.Models;
 using Mapster;
 

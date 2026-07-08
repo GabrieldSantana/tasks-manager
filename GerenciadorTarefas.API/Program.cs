@@ -1,4 +1,6 @@
 using System.Data;
+using Application.Validators;
+using FluentValidation;
 using GerenciadorTarefas.API.Config;
 using Microsoft.Data.SqlClient;
 using TasksManager.API.Config;
@@ -34,6 +36,8 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.DependencyInjections(builder.Configuration);
+
+builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskValidator>();
 
 builder.Services.RegisterMaps();
 

@@ -1,7 +1,8 @@
-﻿using Application.Interfaces;
-using Application.Services.Exceptions;
-using Domain.Dtos;
+﻿using Application.Dtos.Requests;
+using Application.Dtos.Responses;
+using Application.Interfaces;
 using Domain.Models;
+using FluentValidation;
 using Infrastructure.Interfaces;
 using Mapster;
 using Microsoft.IdentityModel.Tokens;
@@ -10,100 +11,92 @@ namespace Application.Services;
 public class TaskService : ITaskService
 {
     private readonly ITaskRepository _repository;
-    public TaskService(ITaskRepository repository)
+    private readonly IValidator<CreateTaskRequest> _createValidator;
+    private readonly IValidator<UpdateTaskRequest> _updateValidator;
+    public TaskService(ITaskRepository repository, IValidator<CreateTaskRequest> createValidator, IValidator<UpdateTaskRequest> updateValidator)
     {
         _repository = repository;
+        _createValidator = createValidator;
+        _updateValidator = updateValidator;
     }
 
-    public async Task<bool> CreateTaskAsync(CreateTaskRequest taskDTO)
+    public async Task<TaskResponse> CreateTaskAsync(CreateTaskRequest taskRequest)
     {
-        try
-        {
-            TaskModel task = taskDTO.Adapt<TaskModel>();
-            task.Id = Guid.CreateVersion7();
+        var validation = await _createValidator.ValidateAsync(taskRequest);
 
-            return await _repository.CreateTaskAsync(task);
-        }
-        catch (Exception) { throw; }
+        if (!validation.IsValid) throw new ValidationException(validation.Errors);
+
+        TaskModel task = taskRequest.Adapt<TaskModel>();
+        task.Id = Guid.CreateVersion7();
+
+        await _repository.CreateTaskAsync(task);
+
+        return task.Adapt<TaskResponse>();
     }
 
-    public async Task<bool> DeleteTaskAsync(Guid id)
+    public async Task DeleteTaskAsync(Guid id)
     {
-        try
-        {
-            if (id == Guid.Empty) throw new ArgumentException("Invalid id.");
+        if (id == Guid.Empty) throw new ArgumentException("Invalid id.");
 
-            TaskModel? existingTask = await _repository.GetTaskByIdAsync(id);
+        TaskModel? existingTask = await _repository.GetTaskByIdAsync(id);
 
-            if (existingTask == null) throw new NotFoundException("Task not found.");
+        if (existingTask == null) throw new KeyNotFoundException("Task not found.");
 
-            return await _repository.DeleteTaskAsync(id);
-        }
-        catch (Exception) { throw; }
+        await _repository.DeleteTaskAsync(id);
     }
 
     public async Task<TaskResponse> GetTaskByIdAsync(Guid id)
     {
-        try
+        if (id == Guid.Empty) throw new ArgumentException("Invalid id.");
+
+        TaskModel? existingTask = await _repository.GetTaskByIdAsync(id);
+
+        if (existingTask == null) throw new KeyNotFoundException($"Task {id} not found.");
+
+        var response = new TaskResponse
         {
-            if (id == Guid.Empty) throw new ArgumentException("Invalid id.");
+            Id = existingTask.Id,
+            Name = existingTask.Name,
+            Description = existingTask.Description,
+            Priority = existingTask.Priority.ToString(),
+            LimitDate = existingTask.LimitDate,
+            Status = existingTask.Status.ToString()
+        };
 
-            TaskModel? existingTask = await _repository.GetTaskByIdAsync(id);
-
-            if (existingTask == null) throw new KeyNotFoundException($"Task {id} not found.");
-
-            var response = new TaskResponse
-            {
-                Id = existingTask.Id,
-                Name = existingTask.Name,
-                Description = existingTask.Description,
-                Priority = existingTask.Priority.ToString(),
-                LimitDate = existingTask.LimitDate,
-                Status = existingTask.Status.ToString()
-            };
-
-            return response;
-        }
-        catch (Exception) { throw; }
+        return response;
     }
 
     public async Task<List<TaskResponse>> GetTasksAsync()
     {
-        try
+        List<TaskModel> tasks = await _repository.GetTasksAsync();
+
+        if (tasks.IsNullOrEmpty()) throw new KeyNotFoundException("No tasks were found.");
+
+        var response = tasks.Select(task => new TaskResponse
         {
-            List<TaskModel> tasks = await _repository.GetTasksAsync();
+            Id = task.Id,
+            Name = task.Name,
+            Description = task.Description,
+            Priority = task.Priority.ToString(),
+            LimitDate = task.LimitDate,
+            Status = task.Status.ToString()
+        });
 
-            if (tasks.IsNullOrEmpty()) throw new NotFoundException("No tasks were found.");
-
-            var response = tasks.Select(task => new TaskResponse
-            {
-                Id = task.Id,
-                Name = task.Name,
-                Description = task.Description,
-                Priority = task.Priority.ToString(),
-                LimitDate = task.LimitDate,
-                Status = task.Status.ToString()
-            });
-
-            return response.ToList();
-        }
-        catch (Exception) { throw; }
+        return response.ToList();
     }
 
-    public async Task<bool> UpdateTaskAsync(UpdateTaskRequest taskDTO)
+    public async Task UpdateTaskAsync(UpdateTaskRequest taskRequest)
     {
-        try
-        {
-            if (taskDTO.Id == Guid.Empty) throw new ArgumentException("Invalid id.");
+        var validation = await _updateValidator.ValidateAsync(taskRequest);
 
-            TaskModel task = taskDTO.Adapt<TaskModel>();
+        if (taskRequest.Id == Guid.Empty) throw new ArgumentException("Invalid id.");
 
-            TaskModel? existingTask = await _repository.GetTaskByIdAsync(task.Id);
+        TaskModel task = taskRequest.Adapt<TaskModel>();
 
-            if (existingTask == null) throw new NotFoundException("Task not found.");
+        TaskModel? existingTask = await _repository.GetTaskByIdAsync(task.Id);
 
-            return await _repository.UpdateTaskAsync(task);
-        }
-        catch (Exception) { throw; }
+        if (existingTask == null) throw new KeyNotFoundException("Task not found.");
+
+        await _repository.UpdateTaskAsync(task);
     }
 }
