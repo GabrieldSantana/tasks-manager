@@ -1,4 +1,4 @@
-﻿using Application.Dtos.Responses;
+﻿using TasksManager.API.Contracts;
 
 namespace TasksManager.API.Middleware;
 

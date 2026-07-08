@@ -1,4 +1,4 @@
-﻿namespace Application.Dtos.Responses;
+﻿namespace TasksManager.API.Contracts;
 public class ErrorResponse
 {
     public int StatusCode { get; set; }
