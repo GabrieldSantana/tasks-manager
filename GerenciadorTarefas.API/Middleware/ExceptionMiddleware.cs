@@ -1,4 +1,5 @@
-﻿using TasksManager.API.Contracts;
+﻿using FluentValidation;
+using TasksManager.API.Contracts;
 
 namespace TasksManager.API.Middleware;
 
@@ -35,6 +36,16 @@ public class ExceptionMiddleware
         
         switch(exception)
         {
+            case ValidationException validationException:
+
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+                response.StatusCode = 400;
+                response.Message = "Validation failed";
+                response.Errors = validationException.Errors.Select(e => e.ErrorMessage).ToList();
+
+                break;
+
             case ArgumentException:
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
