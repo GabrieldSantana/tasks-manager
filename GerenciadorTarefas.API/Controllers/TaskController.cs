@@ -23,9 +23,9 @@ public class TaskController : ControllerBase
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetTasksAsync()
+    public async Task<IActionResult> GetTasksAsync([FromQuery] TaskFilterRequest request)
     {
-        List<TaskResponse> tasks = await _service.GetTasksAsync();
+        var tasks = await _service.GetTasksAsync(request);
         return Ok(tasks);
     }
 
@@ -34,7 +34,7 @@ public class TaskController : ControllerBase
     /// </summary>
     /// <param name="id"></param>
     /// <returns>Returns a task object</returns>
-    [HttpGet("{id:Guid}")]
+    [HttpGet("{id:guid}", Name = nameof(GetTaskByIdAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -56,11 +56,10 @@ public class TaskController : ControllerBase
     {
         var task = await _service.CreateTaskAsync(request);
 
-        return CreatedAtAction(
+        return CreatedAtRoute(
             nameof(GetTaskByIdAsync),
             new { id = task.Id },
-            task
-            );
+            task);
 
     }
 

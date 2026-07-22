@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Dapper;
+using Domain.Common;
 using Domain.Models;
 using Infrastructure.Interfaces;
 
@@ -49,15 +50,32 @@ public class TaskRepository : ITaskRepository
 
     }
 
-    public async Task<List<TaskModel>> GetTasksAsync()
+    public async Task<PaginatedResult<TaskModel>> GetTasksAsync(TaskFilterModel filter)
     {
         string sql = @"SELECT ID, NAME, DESCRIPTION, PRIORITY, LIMITDATE, STATUS 
-                        FROM TASK";
+                        FROM TASK
+                       ORDER BY NAME
+                       OFFSET @OFFSET ROWS
+                       FETCH NEXT @PAGESIZE ROWS ONLY";
+          
+        var sqlParams = new
+        {
+            OFFSET = (filter.PageNumber - 1) * filter.PageSize,
+            PAGESIZE = filter.PageSize
+        };
 
-        var tasks = await _connection.QueryAsync<TaskModel>(sql);
+        var tasks = await _connection.QueryAsync<TaskModel>(sql, sqlParams);
 
-        return tasks.ToList();
+        var totalTasks = await _connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM TASK");
 
+        return new PaginatedResult<TaskModel>
+        {
+            Items = tasks.ToList(),
+            TotalItems = totalTasks,
+            PageNumber = filter.PageNumber,
+            PageSize = filter.PageSize,
+            TotalPages = (int)Math.Ceiling((double)totalTasks / filter.PageSize)
+        };
     }
 
     public async Task UpdateTaskAsync(TaskModel task)

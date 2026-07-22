@@ -13,14 +13,17 @@ public class TaskService : ITaskService
     private readonly ITaskRepository _repository;
     private readonly IValidator<CreateTaskRequest> _createValidator;
     private readonly IValidator<UpdateTaskRequest> _updateValidator;
+    private readonly IValidator<TaskFilterRequest> _getValidator;
     private readonly ILogger<TaskService> _logger;
 
-    public TaskService(ITaskRepository repository, IValidator<CreateTaskRequest> createValidator, IValidator<UpdateTaskRequest> updateValidator, ILogger<TaskService> logger)
+    public TaskService(ITaskRepository repository, IValidator<CreateTaskRequest> createValidator, IValidator<UpdateTaskRequest> updateValidator, 
+                            ILogger<TaskService> logger, IValidator<TaskFilterRequest> getValidator)
     {
         _repository = repository;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _logger = logger;
+        _getValidator = getValidator;
     }
 
     public async Task<TaskResponse> CreateTaskAsync(CreateTaskRequest taskRequest)
@@ -84,22 +87,26 @@ public class TaskService : ITaskService
         return response;
     }
 
-    public async Task<List<TaskResponse>> GetTasksAsync()
+    public async Task<PaginatedResponse<TaskModel>> GetTasksAsync(TaskFilterRequest request)
     {
         _logger.LogInformation("Retrieving all tasks.");
 
-        List<TaskModel> tasks = await _repository.GetTasksAsync();
+        var validation = await _getValidator.ValidateAsync(request);
 
-        if (!tasks.Any())
+        if(!validation.IsValid)
         {
-            _logger.LogWarning("No tasks were found.");
-            throw new KeyNotFoundException("No tasks were found.");
+            _logger.LogWarning("Task filter validation failed.");
+            throw new ValidationException(validation.Errors);
         }
 
-        var response = tasks.Adapt<List<TaskResponse>>();
+        TaskFilterModel filter = request.Adapt<TaskFilterModel>();
+
+        var tasks = await _repository.GetTasksAsync(filter);
+
+        var response = tasks.Adapt<PaginatedResponse<TaskModel>>();
 
         _logger.LogInformation("Tasks retrieved successfully.");
-        return response.ToList();
+        return response;
     }
 
     public async Task UpdateTaskAsync(UpdateTaskRequest taskRequest)
